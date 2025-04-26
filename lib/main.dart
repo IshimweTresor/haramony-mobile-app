@@ -6,6 +6,8 @@ import 'home_page.dart';
 import 'profile_screen.dart';
 import 'nta_interineti.dart';
 import 'report_page.dart';
+import 'register_screen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -34,6 +36,7 @@ class MyApp extends StatelessWidget {
               mentorName: ModalRoute.of(context)!.settings.arguments as String,
               avatarUrl: 'https://i.pravatar.cc/150?img=10',
             ),
+        '/register': (context) => RegisterPage(),
       },
     );
   }
