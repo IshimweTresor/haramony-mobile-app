@@ -7,6 +7,7 @@ import 'profile_screen.dart';
 import 'nta_interineti.dart';
 import 'report_page.dart';
 import 'register_screen.dart';
+import 'survey.screen.dart';
 
 
 void main() {
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
               avatarUrl: 'https://i.pravatar.cc/150?img=10',
             ),
         '/register': (context) => RegisterPage(),
+          '/survey': (context) => SurveyQuestionsScreen(),
       },
     );
   }

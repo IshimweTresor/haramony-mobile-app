@@ -76,7 +76,7 @@ static Future<Map<String, dynamic>> login(String username, String password) asyn
   static Future<Map<String, dynamic>> register(User user) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/register'),
+        Uri.parse('$baseUrl/signup'),
         headers: {
           'Content-Type': 'application/json',
         },
