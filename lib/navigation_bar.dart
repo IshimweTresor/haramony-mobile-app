@@ -25,15 +25,15 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.wifi_off),
-          label: "Nta interneti",
+          label: "itumanaho",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.language),
-          label: "Urubuga",
+          label: "abajyanama",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.article),
-          label: "Raporo",
+          label: "ibibazo",
         ),
       ],
     );
