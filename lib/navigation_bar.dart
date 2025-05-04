@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -24,15 +25,15 @@ class CustomBottomNavBar extends StatelessWidget {
           label: "Ahabanza",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.wifi_off),
+          icon: Icon(Icons.chat_bubble),
           label: "itumanaho",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.language),
+          icon: Icon(Icons.recent_actors),
           label: "abajyanama",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.article),
+          icon: FaIcon(FontAwesomeIcons.circleExclamation),
           label: "ibibazo",
         ),
       ],

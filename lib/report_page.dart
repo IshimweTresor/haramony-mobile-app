@@ -99,8 +99,9 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey[900],
-        title: Text("Issue Reporting"),
+        backgroundColor:const Color.fromARGB(255, 21, 17, 39),
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text("Issue Reporting", style: TextStyle(color: Colors.white, fontSize: 20)),
         actions: [
           IconButton(
             icon: Icon(Icons.date_range),
@@ -108,7 +109,11 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
           ),
           Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Center(child: Text(selectedDate, style: TextStyle(fontSize: 16))),
+            child: Center(child: Text(selectedDate, 
+            style: TextStyle(fontSize: 16,
+            color: Colors.white
+            ),
+            )),
           ),
         ],
       ),
@@ -167,10 +172,10 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: _pickDocument,
-                        icon: Icon(Icons.attach_file),
+                        icon: Icon(Icons.attach_file,color: Colors.white,),
                         label: Text("Attach File"),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueGrey[700],
+                          backgroundColor: const Color.fromARGB(255, 21, 17, 39),
                           foregroundColor: Colors.white,
                         ),
                       ),
@@ -193,7 +198,7 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
                       onPressed: _submitIssue,
                       child: Text("Submit Issue"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
+                        backgroundColor: const Color.fromARGB(255, 21, 17, 39),
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(vertical: 14),
                       ),

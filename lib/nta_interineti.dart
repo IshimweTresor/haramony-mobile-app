@@ -99,6 +99,7 @@ class _NtaInterinetiState extends State<NtaInterineti> {
       appBar: AppBar(
         title: Text("Itumanaho", style: GoogleFonts.poppins(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+        iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
           IconButton(

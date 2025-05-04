@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => LoginPage(),
         '/home': (context) => HomePage(),
-        '/settings': (context) => ProfileScreen(),
+        '/profile': (context) => ProfileScreen(),
         '/nta_interineti': (context) => NtaInterineti(),
         '/forum': (context) => MentorshipHomePage(),
         '/report': (context) => IssueReportingPage(),

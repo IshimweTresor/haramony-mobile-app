@@ -16,12 +16,15 @@ class MyPopupMenu extends StatelessWidget {
             value: 'profile',
             child: Text('Profile'),
             onTap: () {
-              Navigator.pushNamed(context, '/settings');
+              Navigator.pushNamed(context, '/profile');
             },
           ),
           PopupMenuItem(
             value: 'settings',
             child: Text('Settings'),
+            onTap: () {
+              Navigator.pushNamed(context, '/settings');
+            },
           ),
           PopupMenuItem(
             value: 'logout',
