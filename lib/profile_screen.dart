@@ -1,174 +1,281 @@
 import 'package:flutter/material.dart';
-import 'package:my_project/navigation_bar.dart';
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ProfileScreen(),
-    );
-  }
-}
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-    int _selectedIndex = 0;
-  void _onNavItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  File? _image;
+  bool _isEditing = false;
 
-    switch (index) {
-      case 0:
-        Navigator.pushNamed(context, '/home');
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/nta_interineti');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/urubuga');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/raporo');
-        break;
+  final TextEditingController _nameController =
+      TextEditingController(text: 'Ishimwe Tresor');
+  final TextEditingController _idController =
+      TextEditingController(text: '1200080106436021');
+  final TextEditingController _phoneController =
+      TextEditingController(text: '250784107365');
+  final TextEditingController _genderController =
+      TextEditingController(text: 'Male');
+  final TextEditingController _dobController =
+      TextEditingController(text: '1998-01-01');
+
+  Future<void> _pickImage() async {
+    final pickedImage =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _image = File(pickedImage.path);
+      });
     }
   }
+
+  void _editProfile() {
+    setState(() {
+      _isEditing = true;
+    });
+  }
+
+  void _updateProfile() {
+    setState(() {
+      _isEditing = false;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Profile updated')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.blueGrey[900],
-        title: const Text(
-          'Ibikubiyemo',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.blueGrey[900],
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                SizedBox(height: 20),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ProfileItem(title: 'Amazina', value: 'TRESOR Tresor'),
-                  ProfileItem(title: 'Nomero ya telephone', value: '250788435996'),
-                  ProfileItem(title: 'Igitsina', value: 'Male'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const ProfileItem(title: 'Ururimi', value: 'Kinyarwanda'),
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const ProfileItem(title: 'Hindura umubare w\'ibanga', value: ''),
-                      IconButton(
-                        icon: const Icon(Icons.vpn_key, color: Colors.blue),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/');
-                    },
-                    icon: const Icon(Icons.logout, color: Colors.red),
-                    label: const Text('Kuvamo', style: TextStyle(color: Colors.red)),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const PoweredBySection(),
+        title: const Text('Umwirondoro'),
+        backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: _editProfile,
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Profile',
+          )
         ],
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: _selectedIndex, 
-        onTap: _onNavItemTapped,
-        )
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            _buildProfileHeader(),
+            const SizedBox(height: 20),
+            _buildProfileSection(),
+            if (_isEditing)
+              ElevatedButton(
+                onPressed: _updateProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Update'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: _pickImage,
+          child: CircleAvatar(
+            radius: 40,
+            backgroundImage: _image != null
+                ? FileImage(_image!)
+                : const NetworkImage(
+                        'https://cdn-icons-png.flaticon.com/512/3135/3135715.png')
+                    as ImageProvider,
+            child: const Align(
+              alignment: Alignment.bottomRight,
+              child: Icon(
+                Icons.camera_alt,
+                size: 20,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _nameController.text,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 21, 17, 39),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'User ID: ${_idController.text}',
+              style: const TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildProfileSection() {
+    return Column(
+      children: [
+        _isEditing
+            ? _editableItem(Icons.person, 'Amazina', _nameController)
+            : ProfileItem(
+                icon: Icons.person,
+                title: 'Amazina',
+                value: _nameController.text),
+        _isEditing
+            ? _editableItem(Icons.badge, 'ID', _idController)
+            : ProfileItem(
+                icon: Icons.badge,
+                title: 'ID',
+                value: _idController.text),
+        _isEditing
+            ? _editableItem(Icons.phone, 'Telephone', _phoneController)
+            : ProfileItem(
+                icon: Icons.phone,
+                title: 'Telephone',
+                value: _phoneController.text),
+        _isEditing
+            ? _editableItem(Icons.person_outline, 'Igitsina', _genderController)
+            : ProfileItem(
+                icon: Icons.person_outline,
+                title: 'Igitsina',
+                value: _genderController.text),
+        _isEditing
+            ? _editableItem(Icons.calendar_today, 'Itariki y\'amavuko', _dobController)
+            : ProfileItem(
+                icon: Icons.calendar_today,
+                title: 'Itariki y\'amavuko',
+                value: _dobController.text),
+      ],
+    );
+  }
+
+  Widget _editableItem(
+      IconData icon, String title, TextEditingController controller) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 21, 17, 39).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: const Color.fromARGB(255, 21, 17, 39)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                labelText: title,
+                labelStyle: const TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class ProfileItem extends StatelessWidget {
+  final IconData icon;
   final String title;
   final String value;
 
-  const ProfileItem({Key? key, required this.title, required this.value}) : super(key: key);
+  const ProfileItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Text(
-        '$title: $value',
-        style: const TextStyle(fontSize: 16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-class PoweredBySection extends StatelessWidget {
-  const PoweredBySection({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
+      child: Row(
         children: [
-          const Text('Powered by', style: TextStyle(fontSize: 14)),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Innovative VAS',
-                style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(width: 5),
-              Image.network(
-                'https://your-logo-url.com/logo.png', // Replace with actual logo URL
-                height: 20,
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 21, 17, 39).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: const Color.fromARGB(255, 21, 17, 39),
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Color.fromARGB(255, 21, 17, 39),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -102,7 +102,7 @@ class _MentorshipChatPageState extends State<MentorshipChatPage> {
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.send, color: Colors.blueGrey[800]),
+                  icon: Icon(Icons.send, color: const Color.fromARGB(255, 179, 211, 228)),
                   onPressed: _sendMessage,
                 ),
               ],

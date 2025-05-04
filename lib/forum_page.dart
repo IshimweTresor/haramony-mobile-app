@@ -24,8 +24,11 @@ class MentorshipHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Mentorship"),
-        backgroundColor: Colors.blueGrey[900],
+        title: Text("Mentorship",
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
+        backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
         itemCount: mentors.length,
