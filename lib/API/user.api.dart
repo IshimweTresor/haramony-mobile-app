@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:my_project/API/mentor_chat.api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.model.dart';
 
@@ -118,21 +119,21 @@ static Future<Map<String, dynamic>> login(String username, String password) asyn
     return prefs.containsKey(tokenKey);
   }
 
-  // Get current user
-  static Future<User?> getCurrentUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(userKey);
+  // // Get current user
+  // static Future<User?> getCurrentUser() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final userData = prefs.getString(userKey);
     
-    if (userData != null) {
-      try {
-        return User.fromJson(jsonDecode(userData));
-      } catch (e) {
-        debugPrint('Error parsing user data: $e');
-        return null;
-      }
-    }
-    return null;
-  }
+  //   if (userData != null) {
+  //     try {
+  //       return User.fromJson(jsonDecode(userData));
+  //     } catch (e) {
+  //       debugPrint('Error parsing user data: $e');
+  //       return null;
+  //     }
+  //   }
+  //   return null;
+  // }
 
   // Get auth token
   static Future<String?> getAuthToken() async {
@@ -146,4 +147,52 @@ static Future<Map<String, dynamic>> login(String username, String password) asyn
     await prefs.setString(tokenKey, token);
     await prefs.setString(userKey, jsonEncode(user.toJson()));
   }
+
+// Update the getCurrentUser method to fix the ID and mentorSpecialty issues:
+
+static Future<User?> getCurrentUser() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString(userKey);
+    
+    if (userData != null) {
+      final jsonData = jsonDecode(userData);
+      debugPrint('Raw stored user data: $jsonData');
+      
+      // Check if we have a user ID
+      String? userId = jsonData['_id'];
+      if (userId == null) {
+        // Try to find this user in available mentors by name
+        final mentors = await MentorChatApiService.getAvailableMentors();
+        final username = jsonData['usernames'];
+        
+        for (var mentor in mentors) {
+          if (mentor.usernames == username) {
+            debugPrint('Found user ID in mentors list by name match: ${mentor.id}');
+            userId = mentor.id;
+            // Also get the specialty if available
+            if (mentor.mentorSpecialty != null && mentor.mentorSpecialty!.isNotEmpty) {
+              jsonData['mentorSpecialty'] = mentor.mentorSpecialty;
+            }
+            break;
+          }
+        }
+      }
+      
+      // Create user with fixed ID
+      return User(
+        id: userId ?? '',
+        usernames: jsonData['usernames'] ?? '',
+        idNumber: jsonData['idNumber'] ?? 0,
+        phoneNumber: jsonData['phoneNumber'] ?? '',
+        mentorSpecialty: jsonData['mentorSpecialty'],
+        password: jsonData['password'],
+      );
+    }
+    return null;
+  } catch (e) {
+    debugPrint('Error in getCurrentUser: $e');
+    return null;
+  }
+}
 }

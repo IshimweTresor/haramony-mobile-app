@@ -4,20 +4,29 @@ part 'user.model.g.dart';
 
 @JsonSerializable()
 class User {
+  @JsonKey(name: '_id')
+  final String? id;
+
   final String usernames;
   
   @JsonKey(name: 'ID_number', defaultValue: 0)
   final int idNumber;
   
+  
   final String phoneNumber;
+
+  final String? mentorSpecialty;
+
   
   @JsonKey(includeIfNull: false)
-  final String? password; // Make password nullable since it might not be returned
+  final String? password; 
 
   User({
+    this.id,
     required this.usernames,
     required this.idNumber,
     required this.phoneNumber,
+    this.mentorSpecialty,
     this.password,
   });
 
@@ -27,6 +36,6 @@ class User {
   
   @override
   String toString() {
-    return 'User(usernames: $usernames, idNumber: $idNumber, phoneNumber: $phoneNumber)';
+    return 'User(id: $id,usernames: $usernames, idNumber: $idNumber, phoneNumber: $phoneNumber, mentorSpecialty: $mentorSpecialty,)';
   }
 }
