@@ -802,7 +802,7 @@ void _deletePost(Post post) {
       backgroundColor: _twitterBackground,
       appBar: AppBar(
         title: Text(
-          "Itumanaho",
+          "Communication",
           style: GoogleFonts.poppins(
             color: _twitterTextColor,
             fontWeight: FontWeight.bold,
