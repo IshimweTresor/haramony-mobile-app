@@ -139,10 +139,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Column(
       children: [
         _isEditing
-            ? _editableItem(Icons.person, 'Amazina', _nameController)
+            ? _editableItem(Icons.person, 'Names', _nameController)
             : ProfileItem(
                 icon: Icons.person,
-                title: 'Amazina',
+                title: 'Names',
                 value: _nameController.text),
         _isEditing
             ? _editableItem(Icons.badge, 'ID', _idController)
@@ -151,22 +151,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: 'ID',
                 value: _idController.text),
         _isEditing
-            ? _editableItem(Icons.phone, 'Telephone', _phoneController)
+            ? _editableItem(Icons.phone, 'PhoneNumber', _phoneController)
             : ProfileItem(
                 icon: Icons.phone,
-                title: 'Telephone',
+                title: 'PhoneNumber',
                 value: _phoneController.text),
         _isEditing
-            ? _editableItem(Icons.person_outline, 'Igitsina', _genderController)
+            ? _editableItem(Icons.person_outline, 'Gender', _genderController)
             : ProfileItem(
                 icon: Icons.person_outline,
-                title: 'Igitsina',
+                title: 'Gender',
                 value: _genderController.text),
         _isEditing
-            ? _editableItem(Icons.calendar_today, 'Itariki y\'amavuko', _dobController)
+            ? _editableItem(Icons.calendar_today, 'Date of birth', _dobController)
             : ProfileItem(
                 icon: Icons.calendar_today,
-                title: 'Itariki y\'amavuko',
+                title: 'Date of birth',
                 value: _dobController.text),
       ],
     );

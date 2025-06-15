@@ -39,7 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void _validateName(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _nameError = 'Andika amazina yawe';
+        _nameError = 'Enter your name';
       } else {
         _nameError = null;
       }
@@ -50,9 +50,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void _validateIdNumber(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _idNumberError = 'Andika nomero ndangamuntu';
-      } else if (value.length < 10) {
-        _idNumberError = 'Nomero ndangamuntu igomba kugira nibura imibare 10';
+        _idNumberError = 'Enter your ID number';        
+      } else if (value.length < 16) {
+        _idNumberError = 'Nomero ndangamuntu igomba kugira nibura imibare 16';
       } else {
         _idNumberError = null;
       }
@@ -76,9 +76,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void _validatePassword(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _passwordError = 'Andika ijambo banga';
+        _passwordError = 'Enter your password';
       } else if (value.length < 6) {
-        _passwordError = 'Ijambo banga rigomba kugira nibura inyuguti 6';
+        _passwordError = 'The password must be at least 6 characters long';
       } else {
         _passwordError = null;
       }
@@ -94,9 +94,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void _validateConfirmPassword(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _confirmPasswordError = 'Emeza ijambo banga';
+        _confirmPasswordError = 'Confirm your password';
       } else if (value != _passwordController.text) {
-        _confirmPasswordError = 'Amagambo banga ntabwo ahuje';
+        _confirmPasswordError = 'The passwords do not match.';
       } else {
         _confirmPasswordError = null;
       }
@@ -141,7 +141,7 @@ class _RegisterPageState extends State<RegisterPage> {
         // Handle result
         if (result['success']) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Kwiyandikisha byagenze neza!')),
+            SnackBar(content: Text('Registration was successful!')),
           );
           // Navigate to login
           Navigator.pop(context);
@@ -152,7 +152,7 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Habaye ikibazo, ongera ugerageze')),
+          SnackBar(content: Text('An error occurred, please try again.')),
         );
       } finally {
         setState(() {
@@ -219,7 +219,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Iyandikishe',
+                      'Register',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -231,7 +231,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Name field with validation
                     _buildTextField(
                       controller: _nameController,
-                      hintText: 'Amazina yawe',
+                      hintText: 'Your Name',
                       onChanged: _validateName,
                     ),
                     if (_nameError != null)
@@ -241,7 +241,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // ID Number field with validation
                     _buildTextField(
                       controller: _idNumberController,
-                      hintText: 'Nomero ndangamuntu',
+                      hintText: 'Id Number',
                       onChanged: _validateIdNumber,
                     ),
                     if (_idNumberError != null)
@@ -251,7 +251,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Phone field with validation
                     _buildTextField(
                       controller: _phoneController,
-                      hintText: 'Nomero ya telephone',
+                      hintText: 'Phone Number',
                       onChanged: _validatePhone,
                     ),
                     if (_phoneError != null)
@@ -261,7 +261,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Password field with validation
                     _buildTextField(
                       controller: _passwordController,
-                      hintText: 'Ijambo banga',
+                      hintText: 'password',
                       isPassword: true,
                       onChanged: _validatePassword,
                     ),
@@ -272,7 +272,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Confirm Password field with validation
                     _buildTextField(
                       controller: _confirmPasswordController,
-                      hintText: 'Emeza ijambo banga',
+                      hintText: 'Confirm Password',
                       isPassword: true,
                       onChanged: _validateConfirmPassword,
                     ),
@@ -296,7 +296,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                             ),
                             child: const Text(
-                              'Iyandikishe',
+                              'Register',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -310,7 +310,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Usanzwe ufite konti?',
+                            'Already have an account?',
                             style: TextStyle(
                               color: Color(0xFF002B49),
                               fontSize: 16,
@@ -322,7 +322,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               Navigator.pop(context);
                             },
                             child: const Text(
-                              'Kwinjira',
+                              'Login',
                               style: TextStyle(
                                 color: Color(0xFF002B49),
                                 fontWeight: FontWeight.bold,

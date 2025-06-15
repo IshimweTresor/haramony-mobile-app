@@ -22,19 +22,19 @@ class CustomBottomNavBar extends StatelessWidget {
       items: [
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
-          label: "Ahabanza",
+          label: "Home",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble),
-          label: "itumanaho",
+          label: "Communition",
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.recent_actors),
-          label: "abajyanama",
+          label: "Mentors",
         ),
         BottomNavigationBarItem(
           icon: FaIcon(FontAwesomeIcons.circleExclamation),
-          label: "ibibazo",
+          label: "Issues",
         ),
       ],
     );

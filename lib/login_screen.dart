@@ -42,9 +42,9 @@ class _LoginPageState extends State<LoginPage> {
   void _validatePassword(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _passwordError = 'Andika ijambo banga';
+        _passwordError = 'Passward';
       } else if (value.length < 6) {
-        _passwordError = 'Ijambo banga rigomba kuba nibura inyuguti 6';
+        _passwordError = 'The password must be at least 6 characters long.';
       } else {
         _passwordError = null;
       }
@@ -143,7 +143,7 @@ class _LoginPageState extends State<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Kwinjira',
+                        'Login',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -155,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Username field with validation
                       _buildTextField(
                         controller: _usernameController,
-                        hintText: 'Amazina yawe',
+                        hintText: 'Names',
                         onChanged: _validateUsername,
                       ),
                       if (_usernameError != null)
@@ -171,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                       // Password field with validation
                       _buildTextField(
                         controller: _passwordController,
-                        hintText: 'Ijambo banga',
+                        hintText: 'password',
                         isPassword: true,
                         onChanged: _validatePassword,
                       ),
@@ -213,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Nta konti ufite?',
+                              'No account?',
                               style: TextStyle(
                                 color: Color(0xFF002B49),
                                 fontSize: 16,
@@ -225,7 +225,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Navigator.pushNamed(context, '/register');
                               },
                               child: const Text(
-                                'Kwiyandikisha',
+                                'Register',
                                 style: TextStyle(
                                   color: Color(0xFF002B49),
                                   fontWeight: FontWeight.bold,
@@ -243,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.pushNamed(context, '/forgot-password');
                           },
                           child: const Text(
-                            'Wibagiwe ijambo banga?',
+                            'forgot password?',
                             style: TextStyle(
                               color: Color(0xFF002B49),
                               fontSize: 16,
