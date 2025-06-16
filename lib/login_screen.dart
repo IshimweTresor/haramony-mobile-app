@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
   void _validateUsername(String? value) {
   setState(() {
     if (value == null || value.isEmpty) {
-      _usernameError = 'Andika amazina yawe';
+      _usernameError = 'Enter your names.';
     } else {
       _usernameError = null;
     }

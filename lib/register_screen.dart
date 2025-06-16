@@ -52,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
       if (value == null || value.isEmpty) {
         _idNumberError = 'Enter your ID number';        
       } else if (value.length < 16) {
-        _idNumberError = 'Nomero ndangamuntu igomba kugira nibura imibare 16';
+        _idNumberError = 'The national ID number must have at least 16 digits.';
       } else {
         _idNumberError = null;
       }
@@ -63,9 +63,9 @@ class _RegisterPageState extends State<RegisterPage> {
   void _validatePhone(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
-        _phoneError = 'Andika nomero ya telefone';
+        _phoneError = 'Enter your phone number.';
       } else if (!value.startsWith('+') && !RegExp(r'^07').hasMatch(value)) {
-        _phoneError = 'Andika nomero ya telefone yuzuye (ex: 07... or +250...)';
+        _phoneError = 'Enter a complete phone number (e.g., 07... or +250...)';
       } else {
         _phoneError = null;
       }

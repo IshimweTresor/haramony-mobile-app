@@ -507,7 +507,7 @@ ListView.builder(
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: "Andika ubutumwa...",
+                      hintText: "Enter a message...",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                         borderSide: BorderSide.none,
