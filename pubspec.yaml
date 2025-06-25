@@ -43,6 +43,22 @@ dependencies:
   json_annotation: ^4.9.0
   shared_preferences: ^2.5.3
   font_awesome_flutter: ^10.8.0
+  flutter_launcher_icons: ^0.11.0
+  flutter_native_splash: ^2.0.2
+
+flutter_native_splash:
+    image: assets/images/logo.png
+    color: "#151127"
+    android: true
+    ios: true
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/logo.png"
+  adaptive_icon_foreground: "assets/images/logo.png"
+  adaptive_icon_background: "#151127"
+
 
 dev_dependencies:
   flutter_test:
@@ -69,8 +85,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+    - assets/images/
+    - assets/icon/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
