@@ -25,11 +25,19 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
   bool _isLoadingCategories = false;
   String? _errorMessage;
   bool _isCustomCategory = false;
+  bool _includeLocation = false;
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _customCategoryController = TextEditingController();
+  
+  // Location controllers
+  final TextEditingController _sectorController = TextEditingController();
+  final TextEditingController _cellController = TextEditingController();
+  final TextEditingController _villageController = TextEditingController();
+  final TextEditingController _isiboController = TextEditingController();
+  
   File? _attachedFile;
 
   List<Issue> issues = [];
@@ -52,6 +60,18 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
     selectedCategoryId = categoryMap[selectedCategory];
     _loadCategories();
     _loadIssues();
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    _customCategoryController.dispose();
+    _sectorController.dispose();
+    _cellController.dispose();
+    _villageController.dispose();
+    _isiboController.dispose();
+    super.dispose();
   }
 
   void _onNavItemTapped(int index) {
@@ -122,48 +142,46 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
     }
   }
 
-// Replace your existing _loadIssues method with this one
-
-Future<void> _loadIssues() async {
-  setState(() {
-    _isLoading = true;
-    _errorMessage = null;
-  });
-
-  try {
-    // Get the current user first
-    final user = await UserApiService.getCurrentUser();
-    
-    if (user == null || user.id == null) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'User info not available. Please log in again.';
-      });
-      return;
-    }
-    
-    // Now get issues created by this user
-    final response = await IssueApiService.getIssuesByUserId(user.id!);
-    
-    if (response['success']) {
-      setState(() {
-        issues = response['issues'] as List<Issue>;
-        _isLoading = false;
-      });
-    } else {
-      setState(() {
-        _errorMessage = response['message'] ?? 'Failed to load your issues';
-        _isLoading = false;
-      });
-    }
-  } catch (e) {
+  Future<void> _loadIssues() async {
     setState(() {
-      _errorMessage = 'Error: $e';
-      print('Error loading issues: $e');
-      _isLoading = false;
+      _isLoading = true;
+      _errorMessage = null;
     });
+
+    try {
+      // Get the current user first
+      final user = await UserApiService.getCurrentUser();
+      
+      if (user == null || user.id == null) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'User info not available. Please log in again.';
+        });
+        return;
+      }
+      
+      // Now get issues created by this user
+      final response = await IssueApiService.getIssuesByUserId(user.id!);
+      
+      if (response['success']) {
+        setState(() {
+          issues = response['issues'] as List<Issue>;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = response['message'] ?? 'Failed to load your issues';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Error: $e';
+        print('Error loading issues: $e');
+        _isLoading = false;
+      });
+    }
   }
-}
 
   Future<void> _pickDocument() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -244,12 +262,28 @@ Future<void> _loadIssues() async {
           finalCategoryId = categoryMap[selectedCategory];
         }
 
+        // Create location if needed
+        Location? location;
+        if (_includeLocation && 
+            (_sectorController.text.isNotEmpty || 
+             _cellController.text.isNotEmpty || 
+             _villageController.text.isNotEmpty || 
+             _isiboController.text.isNotEmpty)) {
+          
+          location = Location(
+            sector: _sectorController.text.isNotEmpty ? _sectorController.text : null,
+            cell: _cellController.text.isNotEmpty ? _cellController.text : null,
+            village: _villageController.text.isNotEmpty ? _villageController.text : null,
+            isibo: _isiboController.text.isNotEmpty ? _isiboController.text : null,
+          );
+        }
+
         // Create the issue
         final response = await IssueApiService.createIssue(
           title: _titleController.text,
           description: _descriptionController.text,
           categoryId: finalCategoryId!,
-          location: null, // Add location handling if needed
+          location: location,
         );
 
         setState(() {
@@ -261,8 +295,13 @@ Future<void> _loadIssues() async {
           _titleController.clear();
           _descriptionController.clear();
           _customCategoryController.clear();
+          _sectorController.clear();
+          _cellController.clear();
+          _villageController.clear();
+          _isiboController.clear();
           _attachedFile = null;
           _isCustomCategory = false;
+          _includeLocation = false;
           
           if (categories.isNotEmpty) {
             selectedCategory = categories.first;
@@ -327,154 +366,223 @@ Future<void> _loadIssues() async {
       ),
       body: RefreshIndicator(
         onRefresh: _loadIssues,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              // Form
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Title
-                    TextFormField(
-                      controller: _titleController,
-                      decoration: InputDecoration(
-                        labelText: "Issue Title",
-                        border: OutlineInputBorder(),
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                // Form
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Title
+                      TextFormField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: "Issue Title",
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
                       ),
-                      validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
-                    ),
-                    SizedBox(height: 10),
+                      SizedBox(height: 10),
 
-                    // Description
-                    TextFormField(
-                      controller: _descriptionController,
-                      maxLines: 4,
-                      decoration: InputDecoration(
-                        labelText: "Issue Description",
-                        border: OutlineInputBorder(),
+                      // Description
+                      TextFormField(
+                        controller: _descriptionController,
+                        maxLines: 4,
+                        decoration: InputDecoration(
+                          labelText: "Issue Description",
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) => value!.isEmpty ? 'Please describe the issue' : null,
                       ),
-                      validator: (value) => value!.isEmpty ? 'Please describe the issue' : null,
-                    ),
-                    SizedBox(height: 10),
+                      SizedBox(height: 10),
 
-                    // Category section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text('Category', style: TextStyle(fontSize: 16, color: Colors.grey[700])),
-                            const Spacer(),
-                            TextButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  _isCustomCategory = !_isCustomCategory;
-                                });
-                              },
-                              icon: Icon(
-                                _isCustomCategory ? Icons.list_alt : Icons.add_circle_outline,
-                                size: 16,
-                                color: const Color.fromARGB(255, 21, 17, 39),
+                      // Category section
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text('Category', style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                              const Spacer(),
+                              TextButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _isCustomCategory = !_isCustomCategory;
+                                  });
+                                },
+                                icon: Icon(
+                                  _isCustomCategory ? Icons.list_alt : Icons.add_circle_outline,
+                                  size: 16,
+                                  color: const Color.fromARGB(255, 21, 17, 39),
+                                ),
+                                label: Text(
+                                  _isCustomCategory ? "Select existing" : "Create new",
+                                  style: TextStyle(color: const Color.fromARGB(255, 21, 17, 39)),
+                                ),
                               ),
-                              label: Text(
-                                _isCustomCategory ? "Select existing" : "Create new",
-                                style: TextStyle(color: const Color.fromARGB(255, 21, 17, 39)),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          _isLoadingCategories 
+                            ? Center(child: CircularProgressIndicator(strokeWidth: 2))
+                            : _isCustomCategory
+                              ? TextFormField(
+                                  controller: _customCategoryController,
+                                  decoration: InputDecoration(
+                                    labelText: "New Category Name",
+                                    hintText: "Enter a new category",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) => value!.isEmpty ? 'Please enter a category name' : null,
+                                )
+                              : categories.isEmpty 
+                                ? Center(child: Text("No categories available"))
+                                : DropdownButtonFormField<String>(
+                                    value: selectedCategory,
+                                    items: categories.map((String category) {
+                                      return DropdownMenuItem(value: category, child: Text(category));
+                                    }).toList(),
+                                    onChanged: (newValue) {
+                                      setState(() {
+                                        selectedCategory = newValue!;
+                                        selectedCategoryId = categoryMap[newValue];
+                                      });
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: 'Select Category',
+                                      border: OutlineInputBorder(),
+                                    ),
+                                    validator: (value) => value == null || value.isEmpty ? 'Please select a category' : null,
+                                  ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      
+                      // Location toggle
+                      Row(
+                        children: [
+                          Text('Include Location Details', style: TextStyle(fontSize: 16, color: Colors.grey[700])),
+                          Spacer(),
+                          Switch(
+                            value: _includeLocation,
+                            onChanged: (value) {
+                              setState(() {
+                                _includeLocation = value;
+                              });
+                            },
+                            activeColor: const Color.fromARGB(255, 21, 17, 39),
+                          ),
+                        ],
+                      ),
+                      
+                      // Location fields (only shown when toggle is on)
+                      if (_includeLocation)
+                        Column(
+                          children: [
+                            SizedBox(height: 8),
+                            TextFormField(
+                              controller: _sectorController,
+                              decoration: InputDecoration(
+                                labelText: "Sector",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            TextFormField(
+                              controller: _cellController,
+                              decoration: InputDecoration(
+                                labelText: "Cell",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            TextFormField(
+                              controller: _villageController,
+                              decoration: InputDecoration(
+                                labelText: "Village",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            TextFormField(
+                              controller: _isiboController,
+                              decoration: InputDecoration(
+                                labelText: "Isibo",
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: 8),
-                        _isLoadingCategories 
-                          ? Center(child: CircularProgressIndicator(strokeWidth: 2))
-                          : _isCustomCategory
-                            ? TextFormField(
-                                controller: _customCategoryController,
-                                decoration: InputDecoration(
-                                  labelText: "New Category Name",
-                                  hintText: "Enter a new category",
-                                  border: OutlineInputBorder(),
-                                ),
-                                validator: (value) => value!.isEmpty ? 'Please enter a category name' : null,
-                              )
-                            : categories.isEmpty 
-                              ? Center(child: Text("No categories available"))
-                              : DropdownButtonFormField<String>(
-                                  value: selectedCategory,
-                                  items: categories.map((String category) {
-                                    return DropdownMenuItem(value: category, child: Text(category));
-                                  }).toList(),
-                                  onChanged: (newValue) {
-                                    setState(() {
-                                      selectedCategory = newValue!;
-                                      selectedCategoryId = categoryMap[newValue];
-                                    });
-                                  },
-                                  decoration: InputDecoration(
-                                    labelText: 'Select Category',
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  validator: (value) => value == null || value.isEmpty ? 'Please select a category' : null,
-                                ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
+                      SizedBox(height: 16),
 
-                    // Upload Button
-                    Row(
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: _pickDocument,
-                          icon: Icon(Icons.attach_file, color: Colors.white),
-                          label: Text("Attach File"),
+                      // Upload Button
+                      Row(
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _pickDocument,
+                            icon: Icon(Icons.attach_file, color: Colors.white),
+                            label: Text("Attach File"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          if (_attachedFile != null)
+                            Expanded(
+                              child: Text(
+                                _attachedFile!.path.split('/').last,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                        ],
+                      ),
+                      SizedBox(height: 16),
+
+                      // Submit Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isSubmitting ? null : _submitIssue,
+                          child: _isSubmitting 
+                            ? SizedBox(
+                                height: 20, 
+                                width: 20, 
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                )
+                              )
+                            : Text("Submit Issue"),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color.fromARGB(255, 21, 17, 39),
                             foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 14),
                           ),
                         ),
-                        SizedBox(width: 10),
-                        if (_attachedFile != null)
-                          Expanded(
-                            child: Text(
-                              _attachedFile!.path.split('/').last,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                      ],
-                    ),
-                    SizedBox(height: 12),
-
-                    // Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isSubmitting ? null : _submitIssue,
-                        child: _isSubmitting 
-                          ? SizedBox(
-                              height: 20, 
-                              width: 20, 
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              )
-                            )
-                          : Text("Submit Issue"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 21, 17, 39),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 14),
-                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 20),
-
-              // List of Issues
-              Expanded(
-                child: _isLoading
+                SizedBox(height: 20),
+                
+                // Header for issues list
+                Text(
+                  "My Issues",
+                  style: TextStyle(
+                    fontSize: 18, 
+                    fontWeight: FontWeight.bold,
+                    color: const Color.fromARGB(255, 21, 17, 39)
+                  ),
+                ),
+                SizedBox(height: 8),
+                
+                // List of Issues
+                _isLoading
                   ? Center(child: CircularProgressIndicator())
                   : _errorMessage != null
                     ? Center(
@@ -494,9 +602,16 @@ Future<void> _loadIssues() async {
                           ],
                         ),
                       )
-                    :issues.isEmpty
-  ? Center(child: Text("You haven't submitted any issues yet."))
+                    : issues.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 40),
+                            child: Text("You haven't submitted any issues yet."),
+                          )
+                        )
                       : ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
                           itemCount: issues.length,
                           itemBuilder: (context, index) {
                             final issue = issues[index];
@@ -525,16 +640,40 @@ Future<void> _loadIssues() async {
                                           ),
                                         ),
                                         SizedBox(width: 8),
-                                        Text(
-                                          "Category: ${issue.categoryInfo?.name ?? getCategoryName(issue.categoryId)}",
-                                          style: TextStyle(fontSize: 12),
+                                        Expanded(
+                                          child: Text(
+                                            "Category: ${issue.categoryInfo?.name ?? getCategoryName(issue.categoryId)}",
+                                            style: TextStyle(fontSize: 12),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ],
                                     ),
                                     SizedBox(height: 4),
-                                    Text(
-                                      "Submitted: ${_formatDate(issue.createdAt)}",
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Submitted: ${_formatDate(issue.createdAt)}",
+                                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                        ),
+                                        if (issue.location != null && issue.location!.sector != null)
+                                          Expanded(
+                                            child: Row(
+                                              children: [
+                                                SizedBox(width: 8),
+                                                Icon(Icons.location_on, size: 12, color: Colors.grey[600]),
+                                                SizedBox(width: 2),
+                                                Expanded(
+                                                  child: Text(
+                                                    issue.location!.sector!,
+                                                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                     SizedBox(height: 4),
                                     Text(
@@ -550,8 +689,8 @@ Future<void> _loadIssues() async {
                             );
                           },
                         ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -597,38 +736,37 @@ Future<void> _loadIssues() async {
     }
   }
   
-// Replace the existing getCategoryName method with this one
-String getCategoryName(dynamic categoryId) {
-  if (categoryId == null) return 'Unknown';
-  
-  // Case 1: categoryId is a String (just the ID)
-  if (categoryId is String) {
-    for (final entry in categoryMap.entries) {
-      if (entry.value == categoryId) {
-        return entry.key;
-      }
-    }
-  }
-  // Case 2: categoryId is a Map (full category object)
-  else if (categoryId is Map) {
-    // If it has a name property, use that directly
-    if (categoryId['name'] != null) {
-      return categoryId['name'].toString();
-    }
+  String getCategoryName(dynamic categoryId) {
+    if (categoryId == null) return 'Unknown';
     
-    // Otherwise try to look up by ID if available
-    if (categoryId['_id'] != null) {
-      String id = categoryId['_id'].toString();
+    // Case 1: categoryId is a String (just the ID)
+    if (categoryId is String) {
       for (final entry in categoryMap.entries) {
-        if (entry.value == id) {
+        if (entry.value == categoryId) {
           return entry.key;
         }
       }
     }
+    // Case 2: categoryId is a Map (full category object)
+    else if (categoryId is Map) {
+      // If it has a name property, use that directly
+      if (categoryId['name'] != null) {
+        return categoryId['name'].toString();
+      }
+      
+      // Otherwise try to look up by ID if available
+      if (categoryId['_id'] != null) {
+        String id = categoryId['_id'].toString();
+        for (final entry in categoryMap.entries) {
+          if (entry.value == id) {
+            return entry.key;
+          }
+        }
+      }
+    }
+    
+    return 'Unknown';
   }
-  
-  return 'Unknown';
-}
   
   void _showIssueDetail(Issue issue) {
     showModalBottomSheet(
@@ -700,9 +838,11 @@ String getCategoryName(dynamic categoryId) {
                 children: [
                   Icon(Icons.category, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 4),
-                  Text(
-                    "Category: ${issue.categoryInfo?.name ?? getCategoryName(issue.categoryId)}",
-                    style: TextStyle(color: Colors.grey[800]),
+                  Expanded(
+                    child: Text(
+                      "Category: ${issue.categoryInfo?.name ?? getCategoryName(issue.categoryId)}",
+                      style: TextStyle(color: Colors.grey[800]),
+                    ),
                   ),
                 ],
               ),
@@ -775,30 +915,104 @@ String getCategoryName(dynamic categoryId) {
                       ),
                     ),
                     SizedBox(height: 8),
-                    if (issue.location!.province != null)
-                      ListTile(
-                        leading: Icon(Icons.location_on),
-                        title: Text("Province"),
-                        subtitle: Text(issue.location!.province!),
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                    if (issue.location!.district != null)
-                      ListTile(
-                        leading: Icon(Icons.location_city),
-                        title: Text("District"),
-                        subtitle: Text(issue.location!.district!),
-                        dense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
                     if (issue.location!.sector != null)
                       ListTile(
-                        leading: Icon(Icons.map),
+                        leading: Icon(Icons.location_on),
                         title: Text("Sector"),
                         subtitle: Text(issue.location!.sector!),
                         dense: true,
                         contentPadding: EdgeInsets.zero,
                       ),
+                    if (issue.location!.cell != null)
+                      ListTile(
+                        leading: Icon(Icons.grid_3x3),
+                        title: Text("Cell"),
+                        subtitle: Text(issue.location!.cell!),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    if (issue.location!.village != null)
+                      ListTile(
+                        leading: Icon(Icons.holiday_village),
+                        title: Text("Village"),
+                        subtitle: Text(issue.location!.village!),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    if (issue.location!.isibo != null)
+                      ListTile(
+                        leading: Icon(Icons.home),
+                        title: Text("Isibo"),
+                        subtitle: Text(issue.location!.isibo!),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                  ],
+                ),
+              
+              // Add action buttons for pending issues (like delete or edit)
+              if (issue.status == 'Pending')
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 16),
+                    Divider(),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          icon: Icon(Icons.delete),
+                          label: Text('Delete Issue'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: () async {
+                            Navigator.pop(context);
+                            final confirmed = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Delete Issue'),
+                                content: Text('Are you sure you want to delete this issue?'),
+                                actions: [
+                                  TextButton(
+                                    child: Text('Cancel'),
+                                    onPressed: () => Navigator.pop(context, false),
+                                  ),
+                                  TextButton(
+                                    child: Text('Delete'),
+                                    onPressed: () => Navigator.pop(context, true),
+                                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            );
+                            
+                            if (confirmed == true && issue.id != null) {
+                              try {
+                                final response = await IssueApiService.deleteIssue(issue.id!);
+                                
+                                if (response['success']) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Issue deleted successfully')),
+                                  );
+                                  _loadIssues();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(response['message'] ?? 'Failed to delete issue')),
+                                  );
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Error: $e')),
+                                );
+                              }
+                            }
+                          },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
             ],

@@ -14,6 +14,12 @@ class _RegisterPageState extends State<RegisterPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  
+  // Location controllers
+  final _sectorController = TextEditingController();
+  final _cellController = TextEditingController();
+  final _villageController = TextEditingController();
+  final _isiboController = TextEditingController();
 
   // Error messages
   String? _nameError;
@@ -21,6 +27,9 @@ class _RegisterPageState extends State<RegisterPage> {
   String? _phoneError;
   String? _passwordError;
   String? _confirmPasswordError;
+
+  // Toggle for location fields
+  bool _showLocationFields = false;
 
   // Loading state
   bool _isLoading = false;
@@ -32,6 +41,10 @@ class _RegisterPageState extends State<RegisterPage> {
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _sectorController.dispose();
+    _cellController.dispose();
+    _villageController.dispose();
+    _isiboController.dispose();
     super.dispose();
   }
 
@@ -72,13 +85,26 @@ class _RegisterPageState extends State<RegisterPage> {
     });
   }
 
+  // Format phone number to match backend requirements
+  String _formatPhoneNumber(String phone) {
+    if (phone.startsWith('+250')) {
+      return phone;
+    } else if (phone.startsWith('250')) {
+      return '+$phone';
+    } else if (phone.startsWith('0')) {
+      return '+25$phone';
+    } else {
+      return '+250$phone';
+    }
+  }
+
   // Validate password
   void _validatePassword(String? value) {
     setState(() {
       if (value == null || value.isEmpty) {
         _passwordError = 'Enter your password';
-      } else if (value.length < 6) {
-        _passwordError = 'The password must be at least 6 characters long';
+      } else if (value.length < 8) {
+        _passwordError = 'The password must be at least 8 characters long';
       } else {
         _passwordError = null;
       }
@@ -127,12 +153,31 @@ class _RegisterPageState extends State<RegisterPage> {
       });
 
       try {
+        // Format phone number
+        String formattedPhone = _formatPhoneNumber(_phoneController.text);
+        
+        // Create location if any field is filled
+        UserLocation? location;
+        if (_showLocationFields && (_sectorController.text.isNotEmpty || 
+                                   _cellController.text.isNotEmpty || 
+                                   _villageController.text.isNotEmpty || 
+                                   _isiboController.text.isNotEmpty)) {
+          location = UserLocation(
+            sector: _sectorController.text.isEmpty ? null : _sectorController.text,
+            cell: _cellController.text.isEmpty ? null : _cellController.text,
+            village: _villageController.text.isEmpty ? null : _villageController.text,
+            isibo: _isiboController.text.isEmpty ? null : _isiboController.text,
+          );
+        }
+
         // Create user object
         final user = User(
           usernames: _nameController.text,
           idNumber: int.parse(_idNumberController.text),
-          phoneNumber: _phoneController.text,
+          phoneNumber: formattedPhone,
           password: _passwordController.text,
+          role: 'user',
+          location: location,
         );
 
         // Call API
@@ -152,7 +197,7 @@ class _RegisterPageState extends State<RegisterPage> {
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred, please try again.')),
+          SnackBar(content: Text('Error: $e')),
         );
       } finally {
         setState(() {
@@ -241,8 +286,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     // ID Number field with validation
                     _buildTextField(
                       controller: _idNumberController,
-                      hintText: 'Id Number',
+                      hintText: 'Id Number (16 digits)',
                       onChanged: _validateIdNumber,
+                      keyboardType: TextInputType.number,
                     ),
                     if (_idNumberError != null)
                       _buildErrorText(_idNumberError!),
@@ -251,8 +297,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Phone field with validation
                     _buildTextField(
                       controller: _phoneController,
-                      hintText: 'Phone Number',
+                      hintText: 'Phone Number (format: 07... or +250...)',
                       onChanged: _validatePhone,
+                      keyboardType: TextInputType.phone,
                     ),
                     if (_phoneError != null)
                       _buildErrorText(_phoneError!),
@@ -261,7 +308,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     // Password field with validation
                     _buildTextField(
                       controller: _passwordController,
-                      hintText: 'password',
+                      hintText: 'Password (at least 8 characters)',
                       isPassword: true,
                       onChanged: _validatePassword,
                     ),
@@ -278,7 +325,56 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     if (_confirmPasswordError != null)
                       _buildErrorText(_confirmPasswordError!),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 15),
+                    
+                    // Location toggle
+                    Row(
+                      children: [
+                        Text(
+                          'Add location details',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF002B49),
+                          ),
+                        ),
+                        Spacer(),
+                        Switch(
+                          value: _showLocationFields,
+                          onChanged: (value) {
+                            setState(() {
+                              _showLocationFields = value;
+                            });
+                          },
+                          activeColor: Color(0xFF002B49),
+                        ),
+                      ],
+                    ),
+                    
+                    // Location fields (only visible if toggled)
+                    if (_showLocationFields) ...[
+                      SizedBox(height: 15),
+                      _buildTextField(
+                        controller: _sectorController,
+                        hintText: 'Sector',
+                      ),
+                      SizedBox(height: 15),
+                      _buildTextField(
+                        controller: _cellController,
+                        hintText: 'Cell',
+                      ),
+                      SizedBox(height: 15),
+                      _buildTextField(
+                        controller: _villageController,
+                        hintText: 'Village',
+                      ),
+                      SizedBox(height: 15),
+                      _buildTextField(
+                        controller: _isiboController,
+                        hintText: 'Isibo',
+                      ),
+                    ],
+                    
+                    SizedBox(height: 30),
                     
                     // Register button
                     Center(
@@ -359,6 +455,7 @@ class _RegisterPageState extends State<RegisterPage> {
     required String hintText,
     bool isPassword = false,
     void Function(String)? onChanged,
+    TextInputType? keyboardType,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -376,6 +473,7 @@ class _RegisterPageState extends State<RegisterPage> {
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        keyboardType: keyboardType,
         onChanged: onChanged,
         decoration: InputDecoration(
           hintText: hintText,

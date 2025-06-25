@@ -51,12 +51,14 @@ Map<String, dynamic> _$IssueToJson(Issue instance) => <String, dynamic>{
 
 Location _$LocationFromJson(Map<String, dynamic> json) => Location(
   sector: json['sector'] as String?,
-  district: json['district'] as String?,
-  province: json['province'] as String?,
+  cell: json['cell'] as String?,
+  village: json['village'] as String?,
+  isibo: json['isibo'] as String?,
 );
 
 Map<String, dynamic> _$LocationToJson(Location instance) => <String, dynamic>{
   'sector': instance.sector,
-  'district': instance.district,
-  'province': instance.province,
+  'cell': instance.cell,
+  'village': instance.village,
+  'isibo': instance.isibo,
 };

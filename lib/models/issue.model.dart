@@ -103,16 +103,17 @@ class Issue {
 @JsonSerializable()
 class Location {
   final String? sector;
-  final String? district;
-  final String? province;
+  final String? cell;
+  final String? village;
+  final String? isibo;
 
   Location({
     this.sector,
-    this.district,
-    this.province,
+    this.cell,
+    this.village,
+    this.isibo,
   });
 
   factory Location.fromJson(Map<String, dynamic> json) => _$LocationFromJson(json);
   Map<String, dynamic> toJson() => _$LocationToJson(this);
 }
-
