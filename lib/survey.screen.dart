@@ -456,7 +456,7 @@ class _SurveyQuestionsScreenState extends State<SurveyQuestionsScreen> {
         width: double.infinity,
         margin: EdgeInsets.all(20),
         padding: EdgeInsets.all(20),
-        height: 350,
+        height: 600,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
