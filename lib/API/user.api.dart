@@ -244,4 +244,44 @@ static Future<User?> getCurrentUser() async {
     return null;
   }
 }
+
+static Future<User?> refreshUserProfile() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final userData = prefs.getString(userKey);
+    
+    if (userData == null) {
+      debugPrint('No user data in local storage');
+      return null;
+    }
+    
+    final jsonData = jsonDecode(userData);
+    debugPrint('User data from localStorage: $jsonData');
+    
+    // Extract the user data with proper ID handling
+    final Map<String, dynamic> enhancedData = Map<String, dynamic>.from(jsonData);
+    
+    // If _id is missing, use other available identifiers or generate one
+    if (enhancedData['_id'] == null) {
+      // Try to use phoneNumber as a unique identifier if available
+      if (enhancedData['phoneNumber'] != null) {
+        enhancedData['_id'] = 'generated-${enhancedData['phoneNumber']}';
+        debugPrint('Generated ID from phone number: ${enhancedData['_id']}');
+      } else {
+        // Use timestamp as fallback
+        enhancedData['_id'] = 'user-${DateTime.now().millisecondsSinceEpoch}';
+        debugPrint('Generated fallback ID: ${enhancedData['_id']}');
+      }
+      
+      // Save the enhanced data back to localStorage
+      await prefs.setString(userKey, jsonEncode(enhancedData));
+    }
+    
+    // Create user with the enhanced data
+    return User.fromJson(enhancedData);
+  } catch (e) {
+    debugPrint('Error in refreshUserProfile: $e');
+    return null;
+  }
+}
 }

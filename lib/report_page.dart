@@ -142,46 +142,76 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
     }
   }
 
-  Future<void> _loadIssues() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+// Replace your _loadIssues method with this version
 
-    try {
-      // Get the current user first
-      final user = await UserApiService.getCurrentUser();
+Future<void> _loadIssues() async {
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
+
+  try {
+    // Get the current user first
+    final user = await UserApiService.getCurrentUser();
+    debugPrint('Current user data: ${user?.toString()}');
+    
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'User info not available. Please log in again.';
+      });
+      return;
+    }
+    
+    // Check if user ID is null
+    if (user.id == null) {
+      debugPrint('User ID is null, attempting to refresh from localStorage');
       
-      if (user == null || user.id == null) {
+      // Try to refresh the user profile from localStorage
+      final refreshedUser = await UserApiService.refreshUserProfile();
+      
+      if (refreshedUser == null || refreshedUser.id == null) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'User info not available. Please log in again.';
+          _errorMessage = 'Could not retrieve your user ID. Please log out and log in again.';
         });
         return;
       }
       
-      // Now get issues created by this user
-      final response = await IssueApiService.getIssuesByUserId(user.id!);
+      debugPrint('Successfully refreshed user with ID: ${refreshedUser.id}');
       
-      if (response['success']) {
-        setState(() {
-          issues = response['issues'] as List<Issue>;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _errorMessage = response['message'] ?? 'Failed to load your issues';
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Error: $e';
-        print('Error loading issues: $e');
-        _isLoading = false;
-      });
+      // Now get issues created by the refreshed user
+      final response = await IssueApiService.getIssuesByUserId(refreshedUser.id!);
+      _handleIssuesResponse(response);
+    } else {
+      // Normal path - we have a user ID
+      debugPrint('Fetching issues for user ID: ${user.id}');
+      final response = await IssueApiService.getIssuesByUserId(user.id!);
+      _handleIssuesResponse(response);
     }
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Error: $e';
+      debugPrint('Error loading issues: $e');
+      _isLoading = false;
+    });
   }
+}
+
+// Helper method to handle the response
+void _handleIssuesResponse(Map<String, dynamic> response) {
+  if (response['success']) {
+    setState(() {
+      issues = response['issues'] as List<Issue>;
+      _isLoading = false;
+    });
+  } else {
+    setState(() {
+      _errorMessage = response['message'] ?? 'Failed to load your issues';
+      _isLoading = false;
+    });
+  }
+}
 
   Future<void> _pickDocument() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.any);
@@ -584,24 +614,49 @@ class _IssueReportingPageState extends State<IssueReportingPage> {
                 // List of Issues
                 _isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : _errorMessage != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(_errorMessage!, style: TextStyle(color: Colors.red)),
-                            SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: _loadIssues,
-                              child: Text('Try Again'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 21, 17, 39),
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
+                  : // Replace the error message widget in your build method
+
+_errorMessage != null
+  ? Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!, style: TextStyle(color: Colors.red)),
+          SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: _loadIssues,
+                child: Text('Try Again'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color.fromARGB(255, 21, 17, 39),
+                  foregroundColor: Colors.white,
+                ),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  // Force refresh user profile from localStorage
+                  final refreshedUser = await UserApiService.refreshUserProfile();
+                  if (refreshedUser != null) {
+                    _loadIssues();
+                  } else {
+                    // Redirect to login
+                    Navigator.pushReplacementNamed(context, '/login');
+                  }
+                },
+                child: Text('Refresh Session'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    )
                     : issues.isEmpty
                       ? Center(
                           child: Padding(
